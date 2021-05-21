@@ -8,7 +8,8 @@ import org.apache.spark.sql.functions._
 object main extends App {
 
   val inputUri = scala.util.Properties.envOrElse("INPUT_DB_URI", "mongodb://192.168.86.40/test.traffic")
-  val outputUri = scala.util.Properties.envOrElse("OUTPUT_DB_URI", "mongodb://192.168.86.40/test.traffic_report")
+  val outputUri = scala.util.Properties.envOrElse("OUTPUT_DB_URI", "mongodb://192.168.86.40/test.traffic_reports")
+  val inputCollection = scala.util.Properties.envOrElse("INPUT_COLLECTION", "traffic_reports")
 
   val spark = SparkSession.builder()
     .master("local")
@@ -19,7 +20,7 @@ object main extends App {
 
   import spark.implicits._
 
-  val readConfigTraffic = ReadConfig(Map("collection" -> "traffic", "readPreference.type" -> "secondaryPreferred"), Some(ReadConfig(spark.sparkContext)))
+  val readConfigTraffic = ReadConfig(Map("collection" -> inputCollection, "readPreference.type" -> "secondaryPreferred"), Some(ReadConfig(spark.sparkContext)))
   val trafficRdd = MongoSpark.load(spark.sparkContext, readConfigTraffic)
   val trafficDf = trafficRdd.toDF()
     .filter("timestamp > DATE(NOW() - INTERVAL 7 DAY)")
