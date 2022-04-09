@@ -1,6 +1,10 @@
-target/*
 .idea/*
+.bsp/*
+target/*
+project/project/*
+project/target/*
 *.jar
 .history
 .log
 streams/*
+.DS_Store
