@@ -1,6 +1,6 @@
-target/
-.idea/
+target/*
+.idea/*
 *.jar
 .history
 .log
-streams/
+streams/*

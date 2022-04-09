@@ -7,9 +7,9 @@ import org.apache.spark.sql.functions._
 
 object main extends App {
 
-  val inputUri = scala.util.Properties.envOrElse("INPUT_DB_URI", "mongodb://192.168.86.40/test.traffic")
-  val outputUri = scala.util.Properties.envOrElse("OUTPUT_DB_URI", "mongodb://192.168.86.40/test.traffic_reports")
-  val inputCollection = scala.util.Properties.envOrElse("INPUT_COLLECTION", "traffic_reports")
+  val inputUri = scala.util.Properties.envOrElse("INPUT_DB_URI", "mongodb://localhost/appsbymatthew_dev.useractions")
+  val outputUri = scala.util.Properties.envOrElse("OUTPUT_DB_URI", "mongodb://localhost/appsbymatthew_dev.traffic_reports")
+  val inputCollection = scala.util.Properties.envOrElse("INPUT_COLLECTION", "useractions")
 
   val spark = SparkSession.builder()
     .master("local")
@@ -17,11 +17,16 @@ object main extends App {
     .config("spark.mongodb.input.uri", inputUri)
     .config("spark.mongodb.output.uri", outputUri)
     .getOrCreate()
+  spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", scala.util.Properties.envOrElse("AWS_ACCESS_KEY_ID", ""))
+  spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", scala.util.Properties.envOrElse("AWS_SECRET_ACCESS_KEY", ""))
+  spark.sparkContext.hadoopConfiguration.set("fs.s3n.endpoint", "s3.amazonaws.com")
 
   import spark.implicits._
 
   val readConfigTraffic = ReadConfig(Map("collection" -> inputCollection, "readPreference.type" -> "secondaryPreferred"), Some(ReadConfig(spark.sparkContext)))
   val trafficRdd = MongoSpark.load(spark.sparkContext, readConfigTraffic)
+  val trafficDfProto = trafficRdd.toDF()
+  trafficDfProto.show()
   val trafficDf = trafficRdd.toDF()
     .filter("timestamp > DATE(NOW() - INTERVAL 7 DAY)")
     .groupBy($"ip_address", $"browser", $"sublocation", $"description", $"operation")
@@ -43,6 +48,7 @@ object main extends App {
     .withColumn("report_end_date", current_timestamp())
 
   trafficDf.show()
+  trafficDf.write.parquet("s3n://mfarmer5102-spark/AppsByMatthew/")
   MongoSpark.save(trafficDf)
 
   spark.stop()
