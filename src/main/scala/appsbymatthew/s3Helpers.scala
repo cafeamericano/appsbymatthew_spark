@@ -5,11 +5,11 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 object s3Helpers {
 
   def writeToS3(df: DataFrame, saveMode: SaveMode): Unit = {
-    df.repartition(5).write.mode(saveMode).parquet("s3n://mfarmer5102-spark/AppsByMatthew/")
+    df.repartition(config.s3PartitionCount).write.mode(saveMode).parquet(config.s3Path)
   }
 
   def readFromS3(spark: SparkSession): DataFrame = {
-    val df = spark.read.parquet("s3n://mfarmer5102-spark/AppsByMatthew/")
+    val df = spark.read.parquet(config.s3Path)
     df
   }
 
