@@ -2,6 +2,7 @@ package appsbymatthew
 
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.apache.spark.sql.functions._
+import config.daysToCaptureBeforeCurrent
 
 object utils {
 
@@ -12,7 +13,7 @@ object utils {
   def restructureTrafficDf(df: DataFrame): DataFrame = {
     df.show()
     val trafficDf = df
-      .filter("timestamp > DATE(NOW() - INTERVAL 7 DAY)")
+      .filter("timestamp > DATE(NOW() - INTERVAL " + daysToCaptureBeforeCurrent.toString() + " DAY)")
       .groupBy("ip_address", "browser", "sublocation", "description", "operation")
       .count()
       .agg(
@@ -28,7 +29,7 @@ object utils {
       .withColumn("unique_visitor_count", size(col("unique_users")))
       .withColumn("unique_visitor_count", size(col("unique_users")))
       .withColumn("run_date", current_timestamp())
-      .withColumn("report_start_date", date_add(current_timestamp(), -7))
+      .withColumn("report_start_date", date_add(current_timestamp(), daysToCaptureBeforeCurrent * -1))
       .withColumn("report_end_date", current_timestamp())
     trafficDf
   }

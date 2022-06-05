@@ -1,9 +1,17 @@
 package appsbymatthew
 
 object config {
-  val inputUri = scala.util.Properties.envOrElse("INPUT_DB_URI", "")
-  val outputUri = scala.util.Properties.envOrElse("OUTPUT_DB_URI", "")
-  val inputCollection = scala.util.Properties.envOrElse("INPUT_COLLECTION", "")
-  val s3Path = scala.util.Properties.envOrElse("S3_PATH", "")
+
+  // Env vars
+  val environment = scala.util.Properties.envOrElse("ENVIRONMENT", "local")
+  val mongoDbUri = scala.util.Properties.envOrElse("MONGO_URI", "mongodb://192.168.86.41:27017")
+  val abmDatabase = scala.util.Properties.envOrElse("ABM_DATABASE", "AppsByMatthew")
+  val s3Path = scala.util.Properties.envOrElse("S3_PATH", "/Users/matthewfarmer/Desktop/localParquet")
+
+  // Fixed variables
+  val daysToCaptureBeforeCurrent = 30
   val s3PartitionCount = 5
+  val userActionsCollection = "useractions"
+  val trafficReportsCollection = "traffic_reports"
+
 }
