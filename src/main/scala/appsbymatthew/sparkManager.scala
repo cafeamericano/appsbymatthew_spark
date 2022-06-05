@@ -17,7 +17,7 @@ object sparkManager {
     sparkBuilder.config("spark.default.parallelism", "100")
     val spark = sparkBuilder.getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
-    //    authenticateForS3(spark)
+    authenticateForS3(spark)
     spark
   }
 
